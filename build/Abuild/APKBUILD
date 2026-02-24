@@ -1,0 +1,115 @@
+# Alpine-Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Alpine-Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+# Maintainer: Felix Xing <fxing@qnx.com>
+pkgname=enchant
+pkgver=2.8.12
+pkgrel=0
+pkgdesc="wrapper library for generic spell checking (v2)"
+url="https://rrthomas.github.io/enchant/"
+arch="all"
+license="LGPL-2.1-or-later"
+depends_dev="glib-dev"
+depends="$pkgname-libs=$pkgver-r$pkgrel"
+makedepends="
+    $depends_dev
+    aspell-dev
+    dbus-glib-dev
+    file
+    gettext-dev
+    groff
+    hunspell-dev
+    nuspell-dev
+    clang
+    libc++-dev
+    "
+subpackages="
+    $pkgname-libs
+    $pkgname-dev
+    $pkgname-doc
+    $pkgname-data
+    $pkgname-aspell
+    $pkgname-hunspell
+    $pkgname-nuspell
+    "
+options="!check" # needs unpackaged unittest-cpp
+source="https://github.com/rrthomas/enchant/releases/download/v$pkgver/enchant-$pkgver.tar.gz"
+builddir="$srcdir/enchant-$pkgver"
+
+build() {
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="$CFLAGS -Qunused-arguments" \
+    CXXFLAGS="$CXXFLAGS -Qunused-arguments" \
+    CPPFLAGS="$CPPFLAGS -Qunused-arguments" \
+    ./configure \
+        --build=$CBUILD \
+        --host=$CHOST \
+        --prefix=/usr \
+        --disable-static \
+        --with-aspell \
+        --with-hunspell \
+        --with-nuspell \
+        --enable-relocatable
+    make
+}
+
+check() {
+    make check
+}
+
+package() {
+    depends="
+        $pkgname-aspell=$pkgver-r$pkgrel
+        $pkgname-hunspell=$pkgver-r$pkgrel
+        $pkgname-nuspell=$pkgver-r$pkgrel
+        "
+    make DESTDIR="$pkgdir" install
+}
+
+data() {
+    amove usr/share/enchant-2
+}
+
+aspell() {
+    depends="$pkgname-data=$pkgver-r$pkgrel
+            $pkgname-libs=$pkgver-r$pkgrel
+            glib
+            libintl
+            aspell-libs"
+    install_if="$pkgname-libs=$pkgver-r$pkgrel aspell"
+    amove usr/lib/enchant-2/enchant_aspell.so
+}
+
+hunspell() {
+    depends="$pkgname-data=$pkgver-r$pkgrel
+            $pkgname-libs=$pkgver-r$pkgrel
+            glib
+            libintl
+            aspell-libs
+            libhunspell
+            libc++"
+    install_if="$pkgname-libs=$pkgver-r$pkgrel hunspell"
+    amove usr/lib/enchant-2/enchant_hunspell.so
+}
+
+nuspell() {
+    depends="$pkgname-data=$pkgver-r$pkgrel
+            $pkgname-libs=$pkgver-r$pkgrel
+            glib
+            libintl
+            aspell-libs
+            icu-libs
+            nuspell-libs
+            libc++"
+    install_if="$pkgname-libs=$pkgver-r$pkgrel nuspell"
+    amove usr/lib/enchant-2/enchant_nuspell.so
+}
+
+libs (){
+    default_libs
+    depends="glib libintl aspell-libs"
+}
+
+sha512sums="
+2bcd22afd97e348bc2925c41cb25f7aec9cb67debca4bcf58f6e30ac06dd09582e01896728e8943ba549b76854905b43b9d51c4ca720dd9e5dcd19d7c996d13b  enchant-2.8.12.tar.gz
+"
