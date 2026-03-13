@@ -3,7 +3,7 @@
 # Maintainer: Felix Xing <fxing@qnx.com>
 pkgname=enchant
 pkgver=2.8.12
-pkgrel=0
+pkgrel=${pkgrel:-0}
 pkgdesc="wrapper library for generic spell checking (v2)"
 url="https://rrthomas.github.io/enchant/"
 arch="all"
@@ -110,6 +110,7 @@ libs (){
     depends="glib libintl aspell-libs"
 }
 
+options="$options ${DISABLE_CHECK:+!check}"
 sha512sums="
 2bcd22afd97e348bc2925c41cb25f7aec9cb67debca4bcf58f6e30ac06dd09582e01896728e8943ba549b76854905b43b9d51c4ca720dd9e5dcd19d7c996d13b  enchant-2.8.12.tar.gz
 "
